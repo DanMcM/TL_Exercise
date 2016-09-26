@@ -8,7 +8,7 @@ namespace AddressProcessing.CSV
            Assume this code is in production and backwards compatibility must be maintained.
     */
 
-    public class CSVReaderWriter
+    public class CSVReaderWriter : IDisposable
     {
         private StreamReader _readerStream = null;
         private StreamWriter _writerStream = null;
@@ -35,84 +35,51 @@ namespace AddressProcessing.CSV
 
         public void Write(params string[] columns)
         {
-            string outPut = "";
-
-            for (int i = 0; i < columns.Length; i++)
+            if(columns.Length < 0) //don't write empty lines
             {
-                outPut += columns[i];
-                if ((columns.Length - 1) != i)
+                try
                 {
-                    outPut += "\t";
+                    WriteLine(string.Join("\t", columns));
+                }
+                catch(Exception e)
+                {
+                    //log the error
                 }
             }
-
-            WriteLine(outPut);
         }
 
-        public bool Read(string column1, string column2)
-        {
-            const int FIRST_COLUMN = 0;
-            const int SECOND_COLUMN = 1;
-
-            string line;
-            string[] columns;
-
-            char[] separator = { '\t' };
-
-            line = ReadLine();
-            columns = line.Split(separator);
-
-            if (columns.Length == 0)
-            {
-                column1 = null;
-                column2 = null;
-
-                return false;
-            }
-            else
-            {
-                column1 = columns[FIRST_COLUMN];
-                column2 = columns[SECOND_COLUMN];
-
-                return true;
-            }
-        }
-
+        /*
+         * I removed the implementation of Read() that did not use the out parameters as it was doing unneeded work
+         * and we can get the same information from the other Read() method.
+         * 
+         * If it were not for backwards compatibility with AddressFileProcessor, I would have used the non out parameter 
+         * Read() method. It would return an object containing the columns. I would have also needed to implement a 
+         * hasNext() method, that the while loop on line 24 of AddressFileProcessor could use.
+         * 
+         */
+        
         public bool Read(out string column1, out string column2)
         {
             const int FIRST_COLUMN = 0;
             const int SECOND_COLUMN = 1;
 
-            string line;
-            string[] columns;
-
-            char[] separator = { '\t' };
-
-            line = ReadLine();
-
-            if (line == null)
+            try
             {
-                column1 = null;
-                column2 = null;
+                var columns = ReadLine().Split(new char[]{ '\t' }, StringSplitOptions.RemoveEmptyEntries);
 
-                return false;
-            }
-
-            columns = line.Split(separator);
-
-            if (columns.Length == 0)
-            {
-                column1 = null;
-                column2 = null;
-
-                return false;
-            } 
-            else
-            {
                 column1 = columns[FIRST_COLUMN];
-                column2 = columns[SECOND_COLUMN];
+                column2 = columns[SECOND_COLUMN]; //catch block will catch IndexOutOfBoundsException
 
                 return true;
+            }
+            catch(Exception e)
+            {
+                //log error
+
+                column1 = null;
+                column2 = null;
+
+                return false;
             }
         }
 
@@ -137,6 +104,11 @@ namespace AddressProcessing.CSV
             {
                 _readerStream.Close();
             }
+        }
+
+        public void Dispose()
+        {
+            Close();
         }
     }
 }

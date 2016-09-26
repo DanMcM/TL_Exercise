@@ -11,11 +11,13 @@ namespace AddressProcessing.CSV
         * 1)In the first implementation of Read(), the values of column1 and column2 are not returned. This method only indicates if there is data present,
         *  but does not return any data.
         *  
-        * 2)There is no error handling in any of the methods other than Open(). If anything where to happen the application would crash.
+        * 2)Read() with out parameters will throw an uncaught error if columns contains one entry.
+        *  
+        * 3)There is no error handling in any of the methods other than Open(). If anything where to happen the application would crash.
         * 
-        * 3)The Write() method does not separate values with commas. It actually does not separate any values. The values are concatenated into one continuous string.
+        * 4)The name of the class implies that a csv will be used. The class actually uses a tab separated file.
         * 
-        * 4)This implementation assumes that the caller will close the Streams once finished. Should close the streams when disposed.
+        * 5)This implementation assumes that the caller will close the Streams once finished. Should close the streams when disposed.
         * 
     */
 
