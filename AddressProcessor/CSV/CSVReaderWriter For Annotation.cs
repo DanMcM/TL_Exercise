@@ -13,10 +13,10 @@ namespace AddressProcessing.CSV
         *  
         * 2)Both Read() methods will throw an uncaught error if columns contains one entry.
         *  
-        * 3)There is no exception handling. If anything where to happen the application would crash.
+        * 3)There is no exception handling. If anything were to happen the application would crash.
         * 
-        * 4)Methods like Open() and Close() have more than one resposibility.
-        * Separating their functionality (espacially for Close()) would give more control to a user of the class. 
+        * 4)Methods like Open() and Close() have more than one responsibility.
+        * Separating their functionality (especially for Close()) would give more control to a user of the class. 
         * 
         * 5)This implementation assumes that the caller will close the streams once finished. Should close the streams when disposed to be safe.
         * 
