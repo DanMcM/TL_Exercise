@@ -11,13 +11,16 @@ namespace AddressProcessing.CSV
         * 1)In the first implementation of Read(), the values of column1 and column2 are not returned. This method only indicates if there is data present,
         *  but does not return any data.
         *  
-        * 2)Read() with out parameters will throw an uncaught error if columns contains one entry.
+        * 2)Both Read() methods will throw an uncaught error if columns contains one entry.
         *  
-        * 3)There is no error handling in any of the methods other than Open(). If anything where to happen the application would crash.
+        * 3)There is no exception handling. If anything where to happen the application would crash.
         * 
-        * 4)The name of the class implies that a csv will be used. The class actually uses a tab separated file.
+        * 4)Methods like Open() and Close() have more than one resposibility.
+        * Separating their functionality (espacially for Close()) would give more control to a user of the class. 
         * 
-        * 5)This implementation assumes that the caller will close the Streams once finished. Should close the streams when disposed.
+        * 5)This implementation assumes that the caller will close the streams once finished. Should close the streams when disposed to be safe.
+        * 
+        * 6)(Very minor)The name of the class implies that a csv will be used. The class actually uses a tab separated file.
         * 
     */
 

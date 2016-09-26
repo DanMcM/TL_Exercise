@@ -16,26 +16,64 @@ namespace AddressProcessing.CSV
         [Flags]
         public enum Mode { Read = 1, Write = 2 };
 
-        public void Open(string fileName, Mode mode)
+        //new implementations do not need to use the Mode enum
+        public void OpenReader(string fileName)
         {
-            if (mode == Mode.Read)
+            try
             {
                 _readerStream = File.OpenText(fileName);
             }
-            else if (mode == Mode.Write)
+            catch(Exception e)
+            {
+                //log the exception
+                //throw appropriate exception
+            }
+        }
+
+        //new implementations do not need to use the Mode enum
+        public void OpenWriter(string fileName)
+        {
+            try
             {
                 FileInfo fileInfo = new FileInfo(fileName);
                 _writerStream = fileInfo.CreateText();
             }
-            else
+            catch (Exception e)
             {
-                throw new Exception("Unknown file mode for " + fileName);
+                //log the exception
+                //throw appropriate exception
+            }
+        }
+
+        //kept for backwards compatibility
+        public void Open(string fileName, Mode mode)
+        {
+            try
+            {
+                if (mode == Mode.Read)
+                {
+                    OpenReader(fileName);
+                }
+                else if (mode == Mode.Write)
+                {
+                    OpenWriter(fileName);
+                }
+                else
+                {
+                    throw new Exception("Unknown file mode for " + fileName);
+                }
+            }
+            catch(Exception e)
+            {
+                //log the exception
+                
+                //logic for specific exceptions (e.g. FileNotFound)
             }
         }
 
         public void Write(params string[] columns)
         {
-            if(columns.Length < 0) //don't write empty lines
+            if(columns.Length <= 0) //don't write empty lines
             {
                 try
                 {
@@ -43,21 +81,29 @@ namespace AddressProcessing.CSV
                 }
                 catch(Exception e)
                 {
-                    //log the error
+                    //log the exception
                 }
             }
         }
 
         /*
-         * I removed the implementation of Read() that did not use the out parameters as it was doing unneeded work
-         * and we can get the same information from the other Read() method.
+         * Wasn't sure what exactly this was supposed to do. Original did not return any data.
          * 
-         * If it were not for backwards compatibility with AddressFileProcessor, I would have used the non out parameter 
-         * Read() method. It would return an object containing the columns. I would have also needed to implement a 
-         * hasNext() method, that the while loop on line 24 of AddressFileProcessor could use.
-         * 
+         * It now checks that there was actually data read
          */
-        
+        public bool Read(string column1, string column2)
+        {
+            try
+            {
+                return !string.IsNullOrEmpty(ReadLine().Trim());
+            }
+            catch (Exception e)
+            {
+                //log the exception
+                return false;
+            }
+        }
+
         public bool Read(out string column1, out string column2)
         {
             const int FIRST_COLUMN = 0;
@@ -65,7 +111,7 @@ namespace AddressProcessing.CSV
 
             try
             {
-                var columns = ReadLine().Split(new char[]{ '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                var columns = ReadLine().Split(new char[]{ '\t' }, StringSplitOptions.RemoveEmptyEntries); //catch block will catch all exceptions
 
                 column1 = columns[FIRST_COLUMN];
                 column2 = columns[SECOND_COLUMN]; //catch block will catch IndexOutOfBoundsException
@@ -74,7 +120,7 @@ namespace AddressProcessing.CSV
             }
             catch(Exception e)
             {
-                //log error
+                //log the exception
 
                 column1 = null;
                 column2 = null;
@@ -93,19 +139,32 @@ namespace AddressProcessing.CSV
             return _readerStream.ReadLine();
         }
 
-        public void Close()
+        //user of the class can now close the writer without closing the reader
+        public void CloseWriter()
         {
             if (_writerStream != null)
             {
                 _writerStream.Close();
             }
+        }
 
+        //user of the class can now close the reader without closing the writer
+        public void CloseReader()
+        {
             if (_readerStream != null)
             {
                 _readerStream.Close();
             }
         }
 
+        //kept for backwards compatibility
+        public void Close()
+        {
+            CloseWriter();
+            CloseReader();
+        }
+
+        //ensures the streams are closed
         public void Dispose()
         {
             Close();
